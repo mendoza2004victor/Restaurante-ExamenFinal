@@ -1,92 +1,89 @@
-// En: src/components/GestionMesas.jsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Ya lo instalamos antes
+// En: src/components/GestionMesas.tsx
+import React, { useState, useEffect } from 'react'; // <-- 1. IMPORTAR
+import axios from 'axios';
 
-// La URL de tu API de NestJS
 const API_URL = 'http://localhost:3000/mesas';
 
-export function GestionMesas() {
-  const [mesas, setMesas] = useState([]); // Lista de mesas de la DB
-  const [error, setError] = useState('');
+// 2. Definir la "forma" de una Mesa
+interface Mesa {
+  id: number;
+  numero: number;
+  capacidad: number;
+  ubicacion: string;
+}
 
-  // Datos para el formulario de nueva mesa
+export function GestionMesas() {
+  const [mesas, setMesas] = useState<Mesa[]>([]); // <-- 3. Añadir tipo
+  const [error, setError] = useState('');
   const [numero, setNumero] = useState('');
   const [capacidad, setCapacidad] = useState('');
   const [ubicacion, setUbicacion] = useState('');
 
-  // Función para cargar las mesas (GET)
   const fetchMesas = () => {
     axios.get(API_URL)
       .then(response => {
         setMesas(response.data);
         setError('');
       })
-      .catch(error => {
+      .catch((error: any) => { // <-- 4. Añadir tipo
         console.error('Error cargando mesas:', error);
         setError('Error al cargar mesas. ¿El backend está funcionando?');
       });
   };
 
-  // Cargar las mesas cuando el componente se monta
   useEffect(() => {
     fetchMesas();
-  }, []); // El array vacío [] significa que solo se ejecuta una vez
+  }, []); 
 
-  // Función para manejar el envío del formulario (POST)
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { // <-- 5. Añadir tipo
+    e.preventDefault(); 
 
     const nuevaMesa = {
-      numero: parseInt(numero), // Convertimos a número
+      numero: parseInt(numero), 
       capacidad: parseInt(capacidad),
       ubicacion: ubicacion,
     };
 
-    // Petición POST para crear la mesa
     axios.post(API_URL, nuevaMesa)
-      .then(response => {
-        // Éxito: Limpiamos formulario y recargamos la lista
+      .then(() => { // <-- ¡Listo!
         setNumero('');
         setCapacidad('');
         setUbicacion('');
         setError('');
-        fetchMesas(); // Volvemos a cargar la lista de mesas
+        fetchMesas(); 
       })
-      .catch(error => {
+      .catch((error: any) => { // <-- 6. Añadir tipo
         console.error('Error al crear la mesa:', error.response.data);
-        // Mostrar el error de validación del backend (ej. mesa duplicada)
         setError(`Error al crear mesa: ${error.response.data.message}`);
       });
   };
 
   return (
-    // DIV principal SIN estilos inline
     <div>
       <h2>Gestión de Mesas</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {/* Formulario para agregar mesas SIN estilos inline */}
       <form onSubmit={handleSubmit}>
         <h3>Agregar Nueva Mesa</h3>
         <input
           type="number"
           placeholder="Número de Mesa"
           value={numero}
-          onChange={(e) => setNumero(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNumero(e.target.value)} // <-- Tipo
           required
         />
         <input
           type="number"
           placeholder="Capacidad"
           value={capacidad}
-          onChange={(e) => setCapacidad(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCapacidad(e.target.value)} // <-- Tipo
           required
         />
         <input
           type="text"
           placeholder="Ubicación (Ej: Ventana)"
           value={ubicacion}
-          onChange={(e) => setUbicacion(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUbicacion(e.target.value)} // <-- Tipo
           required
         />
         <button type="submit">Agregar Mesa</button>
@@ -94,9 +91,7 @@ export function GestionMesas() {
 
       <hr />
 
-      {/* Lista de mesas existentes */}
       <h3>Mesas Actuales</h3>
-      {/* Tabla SIN estilos inline (App.css se encarga) */}
       <table>
         <thead>
           <tr>
@@ -107,7 +102,7 @@ export function GestionMesas() {
           </tr>
         </thead>
         <tbody>
-          {mesas.map(mesa => (
+          {mesas.map((mesa: Mesa) => ( // <-- 7. Añadir tipo
             <tr key={mesa.id}>
               <td>{mesa.id}</td>
               <td>{mesa.numero}</td>

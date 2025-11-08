@@ -1,47 +1,64 @@
-// En: src/components/DashboardRestaurante.jsx
-import React, { useState, useEffect } from 'react';
+// En: src/components/DashboardRestaurante.tsx
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { format } from 'date-fns';
 
-// Este es el endpoint especial que creamos
-const API_URL = 'http://localhost:3000/reservas/hoy';
+const API_RESERVAS_HOY = 'http://localhost:3000/reservas/hoy';
+const API_MESAS = 'http://localhost:3000/mesas';
+
+// 2. Definir Interfaces
+interface Mesa {
+  id: number;
+  numero: number;
+  capacidad: number;
+  ubicacion: string;
+}
+interface Cliente {
+  id: number;
+  nombre: string;
+  email: string;
+}
+interface Reserva {
+  id: number;
+  fecha_hora: string;
+  numero_personas: number;
+  estado: string;
+  cliente: Cliente; // Anidado
+  mesa: Mesa; // Anidado
+}
 
 export function DashboardRestaurante() {
-  const [reservasHoy, setReservasHoy] = useState([]);
+  const [reservasHoy, setReservasHoy] = useState<Reserva[]>([]); // <-- 3. Tipo
+  const [todasLasMesas, setTodasLasMesas] = useState<Mesa[]>([]); // <-- 3. Tipo
   const [error, setError] = useState('');
 
-  // Función para cargar las reservas del día
-  const fetchReservasHoy = () => {
-    axios.get(API_URL)
-      .then(response => {
-        // El backend ya nos da las reservas ordenadas por hora
-        setReservasHoy(response.data);
-        setError('');
-      })
-      .catch(error => {
-        console.error('Error cargando reservas:', error);
-        setError('Error al cargar las reservas del día.');
-      });
+  const fetchData = () => {
+    Promise.all([
+      axios.get(API_RESERVAS_HOY),
+      axios.get(API_MESAS)
+    ]).then(([responseReservas, responseMesas]) => {
+      setReservasHoy(responseReservas.data);
+      setTodasLasMesas(responseMesas.data);
+      setError('');
+    }).catch((error: any) => { // <-- 4. Tipo
+      console.error('Error cargando datos del dashboard:', error);
+      setError('Error al cargar datos.');
+    });
   };
 
-  // Cargar las reservas cuando el componente se monta
   useEffect(() => {
-    fetchReservasHoy();
-
-    // Opcional: Refrescar la lista cada 30 segundos
-    const intervalId = setInterval(fetchReservasHoy, 30000);
-
-    // Limpiar el intervalo cuando el componente se desmonte
+    fetchData();
+    const intervalId = setInterval(fetchData, 30000);
     return () => clearInterval(intervalId);
-  }, []); // El array vacío [] significa que solo se ejecuta una vez al inicio
+  }, []);
 
-  // Función para formatear la hora (ej. "14:30")
-  const formatHora = (fechaString) => {
-    const fecha = new Date(fechaString);
-    return fecha.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' });
+  const formatHora = (fechaString: string) => { // <-- 5. Tipo
+    return format(new Date(fechaString), 'HH:mm');
   };
+
+  const mesasOcupadasHoyIds = new Set(reservasHoy.map(r => r.mesa.id));
 
   return (
-    // DIV principal SIN estilos inline
     <div>
       <h2>Dashboard: Reservas del Día</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -49,32 +66,53 @@ export function DashboardRestaurante() {
       {reservasHoy.length === 0 ? (
         <p>No hay reservas para hoy por el momento.</p>
       ) : (
-        // Tabla SIN estilos inline
         <table>
           <thead>
             <tr>
               <th>Hora</th>
               <th>Cliente</th>
-              <th>Email</th>
               <th>Mesa #</th>
               <th>Personas</th>
-              <th>Estado</th>
             </tr>
           </thead>
           <tbody>
-            {reservasHoy.map(reserva => (
+            {reservasHoy.map((reserva: Reserva) => ( // <-- 6. Tipo
               <tr key={reserva.id}>
                 <td>{formatHora(reserva.fecha_hora)}</td>
                 <td>{reserva.cliente.nombre}</td>
-                <td>{reserva.cliente.email}</td>
                 <td>{reserva.mesa.numero}</td>
                 <td>{reserva.numero_personas}</td>
-                <td>{reserva.estado}</td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      <h3 className="mt-8">Estado de Mesas (Hoy)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Mesa #</th>
+            <th>Capacidad</th>
+            <th>Ubicación</th>
+            <th>Estado (Hoy)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {todasLasMesas.map((mesa: Mesa) => ( // <-- 7. Tipo
+            <tr key={mesa.id}>
+              <td>{mesa.numero}</td>
+              <td>{mesa.capacidad}</td>
+              <td>{mesa.ubicacion}</td>
+              <td style={{ 
+                color: mesasOcupadasHoyIds.has(mesa.id) ? '#ff9b9b' : '#a1ffb2' 
+              }}>
+                {mesasOcupadasHoyIds.has(mesa.id) ? 'Reservada (Hoy)' : 'Libre'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
