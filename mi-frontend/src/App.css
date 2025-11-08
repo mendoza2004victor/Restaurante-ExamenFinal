@@ -1,0 +1,305 @@
+/* 1. Directiva de Tailwind v4 (¡Va primero!) */
+@import "tailwindcss";
+
+/* 2. NUEVO TEMA: Dashboard Profesional (Light Mode) */
+
+/* Definición de las variables del nuevo tema */
+:root {
+  --sidebar-bg: #1f2937; /* Azul/Gris muy oscuro para la barra */
+  --sidebar-text: #e0e0e0;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: #3b82f6; /* Azul brillante para el link activo */
+  
+  --page-bg: #f3f4f6; /* Fondo de página gris claro */
+  --card-bg: #ffffff; /* Tarjetas blancas */
+  
+  --text-primary: #1f2937; /* Texto principal oscuro */
+  --text-secondary: #6b7280; /* Texto secundario gris */
+  
+  --border-color: #e5e7eb; /* Bordes claros */
+  --input-bg: #f9fafb;
+  
+  --primary-color: #3b82f6; /* Color primario: Azul */
+  --primary-color-hover: #2563eb;
+  --secondary-color: #10b981; /* Color secundario: Verde */
+  --secondary-color-hover: #059669;
+  --danger-color: #ef4444; /* Rojo para errores/peligro */
+}
+
+/* Estilos base del body */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--page-bg); /* Fondo de página claro */
+  color: var(--text-primary); /* Texto principal oscuro */
+  line-height: 1.6;
+}
+
+/* --- ESTILOS DEL LAYOUT --- */
+
+.App-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background-color: var(--sidebar-bg); /* Barra lateral oscura */
+  border-right: 1px solid var(--sidebar-bg);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h1 {
+  color: var(--sidebar-text-hover); /* Título en blanco */
+  font-size: 1.8em;
+  text-align: center;
+  margin: 0 0 30px 0;
+  letter-spacing: 1px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  margin-bottom: 10px;
+}
+
+.sidebar li a { /* Estilo para los NavLink */
+  display: block;
+  padding: 12px 18px;
+  color: var(--sidebar-text); /* Texto de enlaces gris claro */
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.sidebar li a:hover {
+  background-color: #374151; /* Fondo de hover un poco más claro */
+  color: var(--sidebar-text-hover);
+}
+
+/* Estilo para el NavLink activo */
+.sidebar li a.active {
+  background-color: var(--sidebar-active-bg); /* Fondo azul */
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* Área de contenido principal */
+.content {
+  flex-grow: 1; /* Ocupa todo el espacio restante */
+  padding: 40px;
+  overflow-y: auto; /* Permite scroll */
+}
+
+/* Contenedor 'main' (donde van las tarjetas) */
+main {
+  width: 100%;
+  max-width: 1280px; /* Ancho máximo del contenido */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Espacio entre componentes */
+}
+
+/* CLASE: Contenedor de Componente (Las "Tarjetas") */
+.component-container {
+  background-color: var(--card-bg); /* Fondo blanco */
+  border-radius: 8px;
+  /* Sombra suave para el look de tarjeta */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  border: 1px solid var(--border-color);
+}
+
+/* --- ESTILOS DE ELEMENTOS --- */
+
+h2 {
+  color: var(--text-primary);
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.8em;
+}
+
+h3 {
+  color: var(--text-primary);
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 40px 0;
+}
+
+/* Estilos para formularios e inputs (Light mode) */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+form h3 {
+  width: 100%;
+  text-align: left;
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="time"] {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-grow: 1;
+  min-width: 150px;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Sombra de foco azul */
+}
+
+label {
+  color: var(--text-secondary);
+  margin-right: 5px;
+  white-space: nowrap;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+button {
+  background-color: var(--primary-color); /* Botón azul */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+button:hover {
+  background-color: var(--primary-color-hover); /* Azul más oscuro */
+}
+
+button[type="submit"] {
+  background-color: var(--secondary-color); /* Botón verde */
+}
+
+button[type="submit"]:hover {
+  background-color: var(--secondary-color-hover);
+}
+
+
+/* Estilos para Fieldsets */
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+fieldset legend {
+  color: var(--primary-color);
+  font-weight: bold;
+  padding: 0 10px;
+  font-size: 1.2em;
+}
+
+/* Radio buttons */
+input[type="radio"] {
+  margin-right: 5px;
+  accent-color: var(--primary-color); /* Pone el radio button azul */
+}
+
+/* Estilos para tablas (Light mode) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: var(--card-bg); /* Fondo blanco */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 15px;
+  text-align: left;
+}
+
+th {
+  background-color: var(--input-bg); /* Fondo de cabecera gris claro */
+  color: var(--text-secondary); /* Texto de cabecera gris */
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.5px;
+}
+
+/* Filas alternas */
+tr:nth-child(even) {
+  background-color: var(--input-bg);
+}
+
+tr:hover {
+  background-color: #f0f4f8; /* Un hover azulado muy claro */
+}
+
+/* CLASES: Mensajes de error y éxito */
+.error-message {
+  background-color: #fee2e2;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.success-message {
+  background-color: #dcfce7;
+  color: #15803d !important;
+  border: 1px solid #86efac;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: left;
+}

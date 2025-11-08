@@ -1,0 +1,16 @@
+# .gitignore (en la carpeta raíz)
+
+# Ignorar en AMBOS proyectos
+node_modules/
+dist/
+.vite/
+
+# Archivos de OS
+.DS_Store
+
+# Archivos de Log
+npm-debug.log*
+yarn-debug.log*
+
+# Archivos de IDE
+.vscode/
