@@ -36,7 +36,7 @@ function App() {
               to="/dashboard"
               className={({ isActive }) => (isActive ? 'active' : '')}
             >
-              Dashboard (Hoy)
+              Estado de Mesas (Hoy)
             </NavLink>
           </li>
           <li>

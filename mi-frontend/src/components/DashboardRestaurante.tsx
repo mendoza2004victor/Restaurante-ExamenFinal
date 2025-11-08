@@ -60,7 +60,7 @@ export function DashboardRestaurante() {
 
   return (
     <div>
-      <h2>Dashboard: Reservas del Día</h2>
+      <h2>Reservas del Día</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {reservasHoy.length === 0 ? (
