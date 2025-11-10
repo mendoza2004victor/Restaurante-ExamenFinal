@@ -1,154 +1,160 @@
 // En: src/components/GestionMesas.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify'; // Importamos toast
 
-const API_MESAS_URL = 'http://localhost:3000/mesas';
+const API_URL = 'http://localhost:3000/mesas';
 
-// 1. Definir la Interfaz para "Mesa"
+const UBICACIONES_POSIBLES = [
+  'Ventana',
+  'Interior',
+  'Terraza',
+  'Barra',
+  'VIP'
+];
+
 interface Mesa {
   id: number;
   numero: number;
   capacidad: number;
   ubicacion: string;
-  // estado: string; // Puedes descomentar esto si tu API lo envía
 }
 
 export function GestionMesas() {
-  // --- Estados del Componente ---
   const [mesas, setMesas] = useState<Mesa[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(''); // <-- La variable que daba el error
-
-  // Estados para el formulario de nueva mesa
+  
+  // --- 👇 'error' y 'setError' eliminados de aquí 👇 ---
   const [numero, setNumero] = useState('');
   const [capacidad, setCapacidad] = useState('');
-  const [ubicacion, setUbicacion] = useState('');
+  const [ubicacion, setUbicacion] = useState(''); 
 
-  // --- Cargar Mesas al Montar (useEffect) ---
+  const fetchMesas = () => {
+    axios.get(API_URL)
+      .then(response => setMesas(response.data))
+      .catch(() => {
+        toast.error("Error al cargar las mesas. ¿El backend está funcionando?");
+      });
+  };
+
   useEffect(() => {
     fetchMesas();
-  }, []); // El array vacío [] asegura que se ejecute solo una vez
+  }, []); 
 
-  const fetchMesas = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get<Mesa[]>(API_MESAS_URL);
-      setMesas(response.data);
-      setError(''); // Limpiar errores si la carga es exitosa
-    } catch (err: any) {
-      console.error("Error al cargar mesas:", err);
-      setError('No se pudieron cargar las mesas desde el servidor.');
-    } finally {
-      setLoading(false);
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); 
+    
+    if (!ubicacion) {
+      toast.warn('Por favor, seleccione una ubicación.');
+      return;
     }
+
+    const nuevaMesa = {
+      numero: parseInt(numero), 
+      capacidad: parseInt(capacidad),
+      ubicacion: ubicacion,
+    };
+
+    axios.post(API_URL, nuevaMesa)
+      .then(() => { 
+        setNumero('');
+        setCapacidad('');
+        setUbicacion(''); 
+        fetchMesas(); 
+        toast.success('¡Mesa agregada con éxito!');
+      })
+      .catch((error: any) => {
+        toast.error(`Error al crear mesa: ${error.response.data.message}`);
+      });
   };
 
-  // --- Función para Crear Nueva Mesa ---
-  const handleCrearMesa = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      const nuevaMesa = {
-        numero: parseInt(numero),
-        capacidad: parseInt(capacidad),
-        ubicacion: ubicacion,
-      };
-
-      const response = await axios.post<Mesa>(API_MESAS_URL, nuevaMesa);
-      
-      // Actualizar el estado local para reflejar la nueva mesa
-      setMesas([...mesas, response.data]);
-
-      // Limpiar formulario
-      setNumero('');
-      setCapacidad('');
-      setUbicacion('');
-
-    } catch (err: any) {
-      console.error("Error al crear mesa:", err.response?.data);
-      let errorMsg = 'Error al crear la mesa.';
-      if (err.response?.data?.message) {
-        if (Array.isArray(err.response.data.message)) {
-          errorMsg = err.response.data.message.join(', ');
-        } else {
-          errorMsg = err.response.data.message;
-        }
+  const handleDeleteMesa = async (id: number) => {
+    const mensaje = `¿Deseas eliminar la Mesa ID ${id}? 
+Esta acción es permanente y la mesa desaparecerá de la lista.`;
+    
+    if (window.confirm(mensaje)) {
+      try {
+        await axios.delete(`${API_URL}/${id}`);
+        fetchMesas(); 
+        toast.success('¡Mesa eliminada con éxito!');
+      } catch (err: any) {
+        toast.error(`Error al eliminar: ${err.response.data.message}`);
       }
-      setError(errorMsg);
     }
   };
 
-  // --- Renderizado del Componente ---
   return (
     <div className="component-container">
       <h2>Gestión de Mesas</h2>
+      {/* --- El <p> de error fue eliminado de aquí --- */}
 
-      {/* --- AQUÍ ESTÁ LA CORRECCIÓN --- */}
-      {/* Mostramos el error si existe. Esto "lee" la variable 'error' */}
-      {error && <p className="error-message">{error}</p>}
-
-      {/* --- Formulario para Nueva Mesa --- */}
-      <form onSubmit={handleCrearMesa}>
-        <fieldset>
-          <legend>Añadir Nueva Mesa</legend>
-          <label>Número:</label>
-          <input
-            type="number"
-            min="1"
-            value={numero}
-            onChange={(e) => setNumero(e.target.value)}
-            required
-          />
-          <label>Capacidad:</label>
-          <input
-            type="number"
-            min="1"
-            value={capacidad}
-            onChange={(e) => setCapacidad(e.target.value)}
-            required
-          />
-          <label>Ubicación:</label>
-          <input
-            type="text"
-            placeholder="Ej. Ventana, Terraza, Salón"
-            value={ubicacion}
-            onChange={(e) => setUbicacion(e.target.value)}
-            required
-          />
-          <button type="submit">Crear Mesa</button>
-        </fieldset>
+      <form onSubmit={handleSubmit}>
+        <h3>Agregar Nueva Mesa</h3>
+        <input
+          type="number"
+          placeholder="Número de Mesa"
+          value={numero}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNumero(e.target.value)}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Capacidad"
+          value={capacidad}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCapacidad(e.target.value)}
+          required
+        />
+        
+        <select
+          value={ubicacion}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setUbicacion(e.target.value)}
+          required
+        >
+          <option value="" disabled style={{ color: 'gray' }}>Seleccione una ubicación...</option>
+          {UBICACIONES_POSIBLES.map(opcion => (
+            <option key={opcion} value={opcion}>{opcion}</option>
+          ))}
+        </select>
+        
+        <button type="submit">Agregar Mesa</button>
       </form>
 
       <hr />
 
-      {/* --- Lista de Mesas Actuales --- */}
-      <h3>Mesas Registradas</h3>
-      
-      {loading && <p>Cargando mesas...</p>}
-
-      {!loading && (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Número</th>
-              <th>Capacidad</th>
-              <th>Ubicación</th>
+      <h3>Mesas Actuales</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Número</th>
+            <th>Capacidad</th>
+            <th>Ubicación</th>
+            <th>Acciones</th> 
+          </tr>
+        </thead>
+        <tbody>
+          {mesas.map((mesa: Mesa) => (
+            <tr key={mesa.id}>
+              <td>{mesa.id}</td>
+              <td>{mesa.numero}</td>
+              <td>{mesa.capacidad}</td>
+              <td>{mesa.ubicacion}</td>
+              <td>
+                <button
+                  type="button" 
+                  style={{ 
+                    backgroundColor: 'var(--danger-color)',
+                    fontSize: '0.9em',
+                    padding: '5px 10px'
+                  }}
+                  onClick={() => handleDeleteMesa(mesa.id)}
+                >
+                  Eliminar
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {mesas.map((mesa) => (
-              <tr key={mesa.id}>
-                <td>{mesa.id}</td>
-                <td>{mesa.numero}</td>
-                <td>{mesa.capacidad}</td>
-                <td>{mesa.ubicacion}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
