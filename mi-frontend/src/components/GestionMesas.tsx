@@ -1,117 +1,154 @@
 // En: src/components/GestionMesas.tsx
-import React, { useState, useEffect } from 'react'; // <-- 1. IMPORTAR
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/mesas';
+const API_MESAS_URL = 'http://localhost:3000/mesas';
 
-// 2. Definir la "forma" de una Mesa
+// 1. Definir la Interfaz para "Mesa"
 interface Mesa {
   id: number;
   numero: number;
   capacidad: number;
   ubicacion: string;
+  // estado: string; // Puedes descomentar esto si tu API lo envía
 }
 
 export function GestionMesas() {
-  const [mesas, setMesas] = useState<Mesa[]>([]); // <-- 3. Añadir tipo
-  const [error, setError] = useState('');
+  // --- Estados del Componente ---
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(''); // <-- La variable que daba el error
+
+  // Estados para el formulario de nueva mesa
   const [numero, setNumero] = useState('');
   const [capacidad, setCapacidad] = useState('');
   const [ubicacion, setUbicacion] = useState('');
 
-  const fetchMesas = () => {
-    axios.get(API_URL)
-      .then(response => {
-        setMesas(response.data);
-        setError('');
-      })
-      .catch((error: any) => { // <-- 4. Añadir tipo
-        console.error('Error cargando mesas:', error);
-        setError('Error al cargar mesas. ¿El backend está funcionando?');
-      });
-  };
-
+  // --- Cargar Mesas al Montar (useEffect) ---
   useEffect(() => {
     fetchMesas();
-  }, []); 
+  }, []); // El array vacío [] asegura que se ejecute solo una vez
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { // <-- 5. Añadir tipo
-    e.preventDefault(); 
-
-    const nuevaMesa = {
-      numero: parseInt(numero), 
-      capacidad: parseInt(capacidad),
-      ubicacion: ubicacion,
-    };
-
-    axios.post(API_URL, nuevaMesa)
-      .then(() => { // <-- ¡Listo!
-        setNumero('');
-        setCapacidad('');
-        setUbicacion('');
-        setError('');
-        fetchMesas(); 
-      })
-      .catch((error: any) => { // <-- 6. Añadir tipo
-        console.error('Error al crear la mesa:', error.response.data);
-        setError(`Error al crear mesa: ${error.response.data.message}`);
-      });
+  const fetchMesas = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get<Mesa[]>(API_MESAS_URL);
+      setMesas(response.data);
+      setError(''); // Limpiar errores si la carga es exitosa
+    } catch (err: any) {
+      console.error("Error al cargar mesas:", err);
+      setError('No se pudieron cargar las mesas desde el servidor.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div>
-      <h2>Gestión de Mesas</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+  // --- Función para Crear Nueva Mesa ---
+  const handleCrearMesa = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
 
-      <form onSubmit={handleSubmit}>
-        <h3>Agregar Nueva Mesa</h3>
-        <input
-          type="number"
-          placeholder="Número de Mesa"
-          value={numero}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNumero(e.target.value)} // <-- Tipo
-          required
-        />
-        <input
-          type="number"
-          placeholder="Capacidad"
-          value={capacidad}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCapacidad(e.target.value)} // <-- Tipo
-          required
-        />
-        <input
-          type="text"
-          placeholder="Ubicación (Ej: Ventana)"
-          value={ubicacion}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUbicacion(e.target.value)} // <-- Tipo
-          required
-        />
-        <button type="submit">Agregar Mesa</button>
+    try {
+      const nuevaMesa = {
+        numero: parseInt(numero),
+        capacidad: parseInt(capacidad),
+        ubicacion: ubicacion,
+      };
+
+      const response = await axios.post<Mesa>(API_MESAS_URL, nuevaMesa);
+      
+      // Actualizar el estado local para reflejar la nueva mesa
+      setMesas([...mesas, response.data]);
+
+      // Limpiar formulario
+      setNumero('');
+      setCapacidad('');
+      setUbicacion('');
+
+    } catch (err: any) {
+      console.error("Error al crear mesa:", err.response?.data);
+      let errorMsg = 'Error al crear la mesa.';
+      if (err.response?.data?.message) {
+        if (Array.isArray(err.response.data.message)) {
+          errorMsg = err.response.data.message.join(', ');
+        } else {
+          errorMsg = err.response.data.message;
+        }
+      }
+      setError(errorMsg);
+    }
+  };
+
+  // --- Renderizado del Componente ---
+  return (
+    <div className="component-container">
+      <h2>Gestión de Mesas</h2>
+
+      {/* --- AQUÍ ESTÁ LA CORRECCIÓN --- */}
+      {/* Mostramos el error si existe. Esto "lee" la variable 'error' */}
+      {error && <p className="error-message">{error}</p>}
+
+      {/* --- Formulario para Nueva Mesa --- */}
+      <form onSubmit={handleCrearMesa}>
+        <fieldset>
+          <legend>Añadir Nueva Mesa</legend>
+          <label>Número:</label>
+          <input
+            type="number"
+            min="1"
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            required
+          />
+          <label>Capacidad:</label>
+          <input
+            type="number"
+            min="1"
+            value={capacidad}
+            onChange={(e) => setCapacidad(e.target.value)}
+            required
+          />
+          <label>Ubicación:</label>
+          <input
+            type="text"
+            placeholder="Ej. Ventana, Terraza, Salón"
+            value={ubicacion}
+            onChange={(e) => setUbicacion(e.target.value)}
+            required
+          />
+          <button type="submit">Crear Mesa</button>
+        </fieldset>
       </form>
 
       <hr />
 
-      <h3>Mesas Actuales</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Número</th>
-            <th>Capacidad</th>
-            <th>Ubicación</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mesas.map((mesa: Mesa) => ( // <-- 7. Añadir tipo
-            <tr key={mesa.id}>
-              <td>{mesa.id}</td>
-              <td>{mesa.numero}</td>
-              <td>{mesa.capacidad}</td>
-              <td>{mesa.ubicacion}</td>
+      {/* --- Lista de Mesas Actuales --- */}
+      <h3>Mesas Registradas</h3>
+      
+      {loading && <p>Cargando mesas...</p>}
+
+      {!loading && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Número</th>
+              <th>Capacidad</th>
+              <th>Ubicación</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {mesas.map((mesa) => (
+              <tr key={mesa.id}>
+                <td>{mesa.id}</td>
+                <td>{mesa.numero}</td>
+                <td>{mesa.capacidad}</td>
+                <td>{mesa.ubicacion}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

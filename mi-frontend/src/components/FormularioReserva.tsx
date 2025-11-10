@@ -114,36 +114,48 @@ export function FormularioReserva() {
   };
 
   return (
-    <div>
+    // Aplicamos la clase de CSS para la "Tarjeta"
+    <div className="component-container">
       <h2>Crear Nueva Reserva</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
 
+      {/* Usamos un solo formulario que maneja ambos pasos */}
       <form onSubmit={handleConfirmarReserva}>
+        
+        {/* --- SECCIÓN 1: DATOS DE RESERVA --- */}
         <fieldset>
           <legend>Paso 1: Detalles de la Reserva</legend>
           <label>Fecha: </label>
-          <input type="date" value={fecha} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFecha(e.target.value)} required />
+          <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+          
           <label>Hora: </label>
-          <input type="time" value={hora} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHora(e.target.value)} required step="1800" />
+          <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} required step="1800" />
+          
           <label>Personas: </label>
-          <input type="number" value={personas} min="1" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPersonas(parseInt(e.target.value))} required />
-          <button type="button" onClick={handleBuscarDisponibilidad}>
+          <input type="number" value={personas} min="1" onChange={(e) => setPersonas(parseInt(e.target.value))} required />
+          
+          <button 
+            type="button" 
+            onClick={handleBuscarDisponibilidad}
+            className="btn-green" // La clase que creamos
+          >
             Buscar Mesas
           </button>
         </fieldset>
 
+        {/* --- SECCIÓN 2: MESAS DISPONIBLES (Aparece después de buscar) --- */}
         {mesasDisponibles.length > 0 && (
           <fieldset>
             <legend>Paso 2: Seleccione una Mesa</legend>
-            {mesasDisponibles.map((mesa: Mesa) => ( // <-- 6. Tipo
+            {mesasDisponibles.map((mesa: Mesa) => (
               <div key={mesa.id}>
                 <input
                   type="radio"
                   name="mesa"
                   id={`mesa-${mesa.id}`}
                   value={mesa.id}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMesaSeleccionada(parseInt(e.target.value))}
+                  onChange={(e) => setMesaSeleccionada(parseInt(e.target.value))}
                 />
                 <label htmlFor={`mesa-${mesa.id}`}>
                   Mesa #{mesa.numero} (Capacidad: {mesa.capacidad}, Ubicación: {mesa.ubicacion})
@@ -153,19 +165,34 @@ export function FormularioReserva() {
           </fieldset>
         )}
 
+        {/* --- SECCIÓN 3: DATOS DEL CLIENTE (Aparece si hay mesa seleccionada) --- */}
         {mesaSeleccionada && (
           <fieldset>
             <legend>Paso 3: Sus Datos</legend>
             <label>Nombre: </label>
             <input type="text" value={nombre} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNombre(e.target.value)} required />
+            
             <label>Email: </label>
             <input type="email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} required />
+            
             <label>Teléfono (Opcional): </label>
             <input type="tel" value={telefono} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTelefono(e.target.value)} />
-            <button type="submit">
+            
+          </fieldset>
+        )}
+        
+        {/* --- 👇 MODIFICACIÓN AQUÍ 👇 --- */}
+        {/* Este div solo aparece si se seleccionó una mesa */}
+        {mesaSeleccionada && (
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            {/* Hacemos el botón un poco más grande para que se vea "final" */}
+            <button 
+              type="submit" 
+              style={{ padding: '12px 25px', fontSize: '1.1em' }}
+            >
               Confirmar Reserva
             </button>
-          </fieldset>
+          </div>
         )}
       </form>
     </div>

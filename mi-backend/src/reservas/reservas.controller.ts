@@ -6,7 +6,9 @@ import {
   Body,
   Param,
   Delete,
-  ParseIntPipe, // Importamos el Pipe para validar IDs
+  ParseIntPipe,
+  Query, // <-- 1. IMPORTAR Query
+  BadRequestException, // <-- 2. IMPORTAR BadRequestException
 } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
@@ -28,6 +30,22 @@ export class ReservasController {
     return this.reservasService.findReservasDelDia();
   }
 
+  // --- 👇 AQUÍ ESTÁ EL ENDPOINT NUEVO AÑADIDO ---
+  
+  /**
+   * CONSULTA ESPECIAL: Reservas por Fecha
+   */
+  @Get('por-fecha')
+  findReservasPorFecha(@Query('fecha') fecha: string) {
+    if (!fecha) {
+      throw new BadRequestException('El parámetro "fecha" es requerido');
+    }
+    // (Idealmente, validaríamos que 'fecha' sea una fecha ISO 'YYYY-MM-DD')
+    return this.reservasService.findReservasPorFecha(fecha);
+  }
+
+  // --- 👆 HASTA AQUÍ ---
+
   @Get()
   findAll() {
     return this.reservasService.findAll();
@@ -41,9 +59,7 @@ export class ReservasController {
   // (El método 'update' (Patch) lo omitimos por ahora)
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) { // <-- AQUÍ ESTABA EL ERROR (KParseIntPipe)
-    // Recordar que tu servicio 'remove' hace una cancelación (lógica),
-    // lo cual es una excelente práctica.
+  remove(@Param('id', ParseIntPipe) id: number) { 
     return this.reservasService.remove(id);
   }
 }

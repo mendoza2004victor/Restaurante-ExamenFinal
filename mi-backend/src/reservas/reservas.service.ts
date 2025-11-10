@@ -104,8 +104,9 @@ export class ReservasService {
     });
   }
 
-  findOne(id: number) {
-    const reserva = this.reservasRepository.findOne({
+  // Corregí un 'await' faltante en tu findOne
+  async findOne(id: number) {
+    const reserva = await this.reservasRepository.findOne({
       where: { id },
       relations: ['cliente', 'mesa'],
     });
@@ -123,8 +124,6 @@ export class ReservasService {
     reserva.estado = 'cancelada';
     return this.reservasRepository.save(reserva);
   }
-
-  // --- 👇 AQUÍ ESTÁ EL NUEVO MÉTODO DE LAS INSTRUCCIONES ---
 
   /**
    * -----------------------------------------------------------------
@@ -144,6 +143,34 @@ export class ReservasService {
     return this.reservasRepository.find({
       where: {
         fecha_hora: Between(hoyInicio, hoyFin),
+        estado: 'confirmada',
+      },
+      relations: ['cliente', 'mesa'], // Cargar datos de cliente y mesa
+      order: {
+        fecha_hora: 'ASC', // Ordenarlas por hora
+      },
+    });
+  }
+
+  // --- 👇 AQUÍ ESTÁ EL MÉTODO NUEVO AÑADIDO ---
+  
+  /**
+   * -----------------------------------------------------------------
+   * CONSULTA ESPECIAL: Reservas por Fecha Específica
+   * -----------------------------------------------------------------
+   */
+  async findReservasPorFecha(fecha: string) {
+    // 1. Crear las fechas de inicio y fin para ese día
+    const fechaInicio = new Date(fecha);
+    fechaInicio.setUTCHours(0, 0, 0, 0); // Usamos UTC para evitar problemas de zona horaria
+
+    const fechaFin = new Date(fecha);
+    fechaFin.setUTCHours(23, 59, 59, 999); // Fin del día en UTC
+
+    // 2. Buscar reservas confirmadas en ese rango
+    return this.reservasRepository.find({
+      where: {
+        fecha_hora: Between(fechaInicio, fechaFin),
         estado: 'confirmada',
       },
       relations: ['cliente', 'mesa'], // Cargar datos de cliente y mesa

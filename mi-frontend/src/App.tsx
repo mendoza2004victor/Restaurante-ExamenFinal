@@ -1,11 +1,17 @@
 // 1. Importamos las herramientas de React Router (¡Ahora con NavLink!)
 import { Routes, Route, NavLink } from 'react-router-dom';
+// Importamos el contenedor de notificaciones
+import { ToastContainer } from 'react-toastify'; 
 
 // 2. Importamos TODAS tus "pantallas" (con las rutas corregidas)
-import { GestionMesas } from './components/GestionMesas';
-import { DashboardRestaurante } from './components/DashboardRestaurante';
-import { FormularioReserva } from './components/FormularioReserva';
-import { HistorialCliente } from './components/HistorialCliente';
+// --- 👇 ¡AQUÍ ESTÁ LA MODIFICACIÓN! 👇 ---
+// Añadimos la extensión .tsx para ayudar al compilador
+import { GestionMesas } from './components/GestionMesas.tsx';
+import { DashboardRestaurante } from './components/DashboardRestaurante.tsx';
+import { FormularioReserva } from './components/FormularioReserva.tsx';
+import { HistorialCliente } from './components/HistorialCliente.tsx';
+// --- 👆 HASTA AQUÍ 👆 ---
+
 
 // 3. Importamos los estilos
 import './App.css';
@@ -15,15 +21,26 @@ function App() {
     // Ahora 'App' es un contenedor flex
     <div className="App-layout">
 
+      {/* Este componente es invisible, pero mostrará las
+          notificaciones (toasts) cuando las llamemos */}
+      <ToastContainer
+        position="bottom-left" // Posición (parte izquierda)
+        autoClose={4000} // Cierre automático en 4 segundos
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light" // Tema claro (combina con tu CSS)
+      />
+
       {/* --- BARRA LATERAL DE NAVEGACIÓN --- */}
       <nav className="sidebar">
         <h1>Restaurante</h1>
         <ul>
           <li>
-            {/* Usamos NavLink en lugar de Link.
-              Esto nos permite añadir una clase 'active' dinámicamente
-              cuando la ruta coincide.
-            */}
             <NavLink
               to="/"
               className={({ isActive }) => (isActive ? 'active' : '')}
@@ -36,7 +53,7 @@ function App() {
               to="/dashboard"
               className={({ isActive }) => (isActive ? 'active' : '')}
             >
-              Estado de Mesas (Hoy)
+              Estado de Mesas
             </NavLink>
           </li>
           <li>
@@ -60,11 +77,7 @@ function App() {
 
       {/* --- ÁREA DE CONTENIDO PRINCIPAL --- */}
       <main className="content">
-        {/* 'Routes' define dónde cambiará el contenido.
-            Coincide con los 'to' de los <NavLink> de arriba.
-        */}
         <Routes>
-          {/* La ruta "raíz" (/) mostrará el formulario de reserva */}
           <Route path="/" element={<FormularioReserva />} />
           <Route path="/dashboard" element={<DashboardRestaurante />} />
           <Route path="/mesas" element={<GestionMesas />} />

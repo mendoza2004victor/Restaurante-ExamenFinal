@@ -1,19 +1,15 @@
-// En: src/mesas/mesas.module.ts
+// En: mi-backend/src/mesas/mesas.module.ts
 import { Module } from '@nestjs/common';
 import { MesasService } from './mesas.service';
 import { MesasController } from './mesas.controller';
-
-// --- 👇 AÑADIMOS LAS IMPORTACIONES ---
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Mesa } from './entities/mesa.entity';
-import { Reserva } from 'src/reservas/entities/reserva.entity';
+import { Reserva } from 'src/reservas/entities/reserva.entity'; // <-- 1. IMPORTAR
 
 @Module({
-  // --- 👇 AQUÍ LE DAMOS ACCESO A LAS ENTIDADES ---
   imports: [
-    TypeOrmModule.forFeature([Mesa, Reserva]) // Añadimos Mesa y Reserva
+    TypeOrmModule.forFeature([Mesa, Reserva]) // <-- 2. AÑADIR RESERVA AQUÍ
   ],
-  
   controllers: [MesasController],
   providers: [MesasService],
 })
